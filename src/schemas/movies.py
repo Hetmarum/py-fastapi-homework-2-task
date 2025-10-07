@@ -45,9 +45,11 @@ class MovieListItemSchema(BaseModel):
 
 
 class MovieListResponseSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     movies: list[MovieListItemSchema]
-    prev_page: str | None
-    next_page: str | None
+    prev_page: Optional[str]
+    next_page: Optional[str]
     total_pages: int
     total_items: int
 
@@ -60,13 +62,13 @@ class MovieDetailSchema(BaseModel):
     date: date
     score: float
     overview: str
-    status: str
-    budget: float
-    revenue: float
+    status: Optional[str]
+    budget: Optional[float]
+    revenue: Optional[float]
     country: Optional[CountrySchema]
-    genres: list[GenreSchema]
-    actors: list[ActorSchema]
-    languages: list[LanguageSchema]
+    genres: Optional[list[GenreSchema]] = None
+    actors: Optional[list[ActorSchema]] = None
+    languages: Optional[list[LanguageSchema]] = None
 
 
 class MovieCreateSchema(BaseModel):
@@ -75,12 +77,12 @@ class MovieCreateSchema(BaseModel):
     score: float = Field(ge=0, le=100)
     overview: str
     status: str
-    budget: Annotated[Decimal, Field(ge=0)]
-    revenue: Annotated[Decimal, Field(ge=0)]
+    budget: Annotated[Decimal, Field(ge=0)] = None
+    revenue: Annotated[Decimal, Field(ge=0)] = None
     country: str
-    genres: list[str]
-    actors: list[str]
-    languages: list[str]
+    genres: Optional[list[str]] = None
+    actors: Optional[list[str]] = None
+    languages: Optional[list[str]] = None
 
 
 class MovieStatus(str, Enum):
@@ -92,10 +94,10 @@ class MovieStatus(str, Enum):
 class MovieUpdateSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    name: Optional[str] = None
+    name: Optional[str] = Field(None, max_length=255)
     date: Optional[date] = None
-    score: Optional[float] = None
+    score: Optional[float] = Field(None, ge=0, le=100)
     overview: Optional[str] = None
     status: Optional[MovieStatus] = None
-    budget: Optional[float] = None
-    revenue: Optional[float] = None
+    budget: Optional[float] = Field(None, ge=0)
+    revenue: Optional[float] = Field(None, ge=0)

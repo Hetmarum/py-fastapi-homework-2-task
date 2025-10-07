@@ -113,7 +113,7 @@ async def create_movie(
 
     if movie_data.date > date.today() + timedelta(days=365):
         raise HTTPException(
-            status_code=400, detail="Date cannot be more than one year in the future."
+            status_code=400, detail="Invalid input data."
         )
 
     async def get_or_create(model, **kwargs):
