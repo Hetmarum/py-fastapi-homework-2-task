@@ -1,7 +1,6 @@
-from datetime import date
-from decimal import Decimal
+from datetime import date, timedelta
 from typing import Annotated, Optional
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from enum import Enum
 
 
@@ -54,6 +53,12 @@ class MovieListResponseSchema(BaseModel):
     total_items: int
 
 
+class MovieStatus(str, Enum):
+    released = "Released"
+    post_production = "Post Production"
+    in_production = "In Production"
+
+
 class MovieDetailSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -62,7 +67,7 @@ class MovieDetailSchema(BaseModel):
     date: date
     score: float
     overview: str
-    status: Optional[str]
+    status: Optional[MovieStatus]
     budget: Optional[float]
     revenue: Optional[float]
     country: Optional[CountrySchema]
@@ -76,19 +81,20 @@ class MovieCreateSchema(BaseModel):
     date: date
     score: float = Field(ge=0, le=100)
     overview: str
-    status: str
-    budget: Annotated[Decimal, Field(ge=0)] = None
-    revenue: Annotated[Decimal, Field(ge=0)] = None
-    country: str
+    status: MovieStatus
+    budget: Annotated[float, Field(ge=0)] = None
+    revenue: Annotated[float, Field(ge=0)] = None
+    country: Optional[str] = Field(None, description="ISO 3166-1 alpha-3 code")
     genres: Optional[list[str]] = None
     actors: Optional[list[str]] = None
     languages: Optional[list[str]] = None
 
-
-class MovieStatus(str, Enum):
-    released = "Released"
-    post_production = "Post Production"
-    in_production = "In Production"
+    @field_validator("date")
+    def validate_date(cls, value):
+        max_allowed = date.today() + timedelta(days=365)
+        if value > max_allowed:
+            raise ValueError("Date cannot be more than one year in the future.")
+        return value
 
 
 class MovieUpdateSchema(BaseModel):
@@ -101,3 +107,11 @@ class MovieUpdateSchema(BaseModel):
     status: Optional[MovieStatus] = None
     budget: Optional[float] = Field(None, ge=0)
     revenue: Optional[float] = Field(None, ge=0)
+
+    @field_validator("date")
+    def validate_date(cls, value):
+        if value is not None:
+            max_allowed = date.today() + timedelta(days=365)
+            if value > max_allowed:
+                raise ValueError("Date cannot be more than one year in the future.")
+        return value

@@ -133,7 +133,7 @@ async def create_movie(
         await get_or_create(GenreModel, name=genre) for genre in movie_data.genres
     ]
     actors = [
-        await get_or_create(ActorModel, name=actors) for actors in movie_data.actors
+        await get_or_create(ActorModel, name=actor) for actor in movie_data.actors
     ]
     languages = [
         await get_or_create(LanguageModel, name=language)
